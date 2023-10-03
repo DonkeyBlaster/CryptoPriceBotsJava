@@ -1,9 +1,18 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'tk.donkeyblaster.Main'
+        )
+    }
 }
 
 group = 'tk.donkeyblaster'
-version = '1.0-SNAPSHOT'
+version = '1.0'
 
 repositories {
     mavenCentral()
