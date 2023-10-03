@@ -12,6 +12,8 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.presence.ClientActivity;
 import discord4j.core.object.presence.ClientPresence;
 import discord4j.core.object.presence.Status;
+import discord4j.core.spec.EmbedCreateSpec;
+import discord4j.rest.util.Color;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -59,7 +61,16 @@ public class SingularPriceBot {
 
             Mono<Void> handlePriceAlerts = client.on(MessageCreateEvent.class, event -> {
                 Message message = event.getMessage();
-                if (message.getContent().startsWith("<@" + event.getClient().getSelfId().asString() + ">")) {
+                if (message.getContent().equals("<@" + event.getClient().getSelfId().asString() + ">")) {
+                    EmbedCreateSpec embed = EmbedCreateSpec.builder()
+                            .color(Color.BLUE)
+                            .title("$" + lastPrice)
+                            .description("CA$" + String.format("%.2f", lastPrice*usdCadConversion))
+                            .addField("Price Up", priceAlertsUp.toString(), true)
+                            .addField("Price Down", priceAlertsDown.toString(), true)
+                            .build();
+                    message.getChannel().flatMap(channel -> channel.createMessage(embed)).block();
+                } else if (message.getContent().startsWith("<@" + event.getClient().getSelfId().asString() + ">")) {
                     try {
                         double newAlertPrice = Double.parseDouble(message.getContent().split(" ")[1]);
                         if (newAlertPrice >= lastPrice) priceAlertsUp.add(newAlertPrice);
